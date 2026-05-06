@@ -3,20 +3,41 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import login
 from .services.auth_service import AuthenticationService
 from .serializers import (
-    RegisterSerializer, 
-    OTPVerifySerializer, 
-    GoogleAuthSerializer
+    RegisterSerializer,
+    OTPVerifySerializer,
+    GoogleAuthSerializer,
+    EmailLoginSerializer,
+    PhoneLoginSerializer,
+    GoogleLoginSerializer
 )
-from django.contrib.auth import login
-from rest_framework.authtoken.models import Token  # If using token auth
 import logging
 
 logger = logging.getLogger(__name__)
 
-class InitiateRegistrationView(APIView):
-    """Step 1: Register and receive OTP"""
+class BaseAuthView(APIView):
+    """Base class for auth views"""
+    
+    def get_tokens_for_user(self, user):
+        """Generate auth token for user"""
+        token, created = Token.objects.get_or_create(user=user)
+        return {
+            'token': token.key,
+            'user_id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+
+
+# =============== REGISTRATION VIEWS ===============
+
+class RegisterView(APIView):
+    """Register with phone + password (Step 1: Get OTP)"""
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -48,16 +69,10 @@ class InitiateRegistrationView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Registration error: {str(e)}")
-            return Response({
-                'success': False,
-                'error': 'Something went wrong. Please try again.'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class VerifyOTPView(APIView):
-    """Step 2: Verify OTP and complete registration"""
+    """Register with phone + password (Step 2: Verify OTP)"""
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -75,19 +90,13 @@ class VerifyOTPView(APIView):
                 otp_input=serializer.validated_data['otp']
             )
             
-            # Generate auth token if using token authentication
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            user = User.objects.get(id=result['user_id'])
-            token, _ = Token.objects.get_or_create(user=user)
+            # Generate tokens
+            user_data = BaseAuthView().get_tokens_for_user(result['user'])
             
             return Response({
                 'success': True,
-                'data': {
-                    'message': result['message'],
-                    'token': token.key,
-                    'user_id': result['user_id']
-                }
+                'message': result['message'],
+                'data': user_data
             }, status=status.HTTP_200_OK)
             
         except ValueError as e:
@@ -95,16 +104,10 @@ class VerifyOTPView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"OTP verification error: {str(e)}")
-            return Response({
-                'success': False,
-                'error': 'Something went wrong. Please try again.'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GoogleAuthView(APIView):
-    """Handle Google OAuth registration/login"""
+class GoogleRegisterView(APIView):
+    """Register/Login with Google OAuth"""
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -117,31 +120,22 @@ class GoogleAuthView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Verify Google token first (optional but recommended)
-            # google_info = verify_google_token(serializer.validated_data['google_token'])
-            
-            result = AuthenticationService.initiate_google_auth(
+            result = AuthenticationService.register_with_google(
                 email=serializer.validated_data['email'],
-                username=serializer.validated_data['username'],
+                username=serializer.validated_data.get('username', serializer.validated_data['email'].split('@')[0]),
                 first_name=serializer.validated_data.get('first_name', ''),
                 last_name=serializer.validated_data.get('last_name', ''),
-                phone=serializer.validated_data.get('phone', '')
+                phone=serializer.validated_data.get('phone', ''),
+                google_id=serializer.validated_data.get('google_id', '')
             )
             
-            # Generate auth token
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            user = User.objects.get(id=result['user_id'])
-            token, _ = Token.objects.get_or_create(user=user)
+            user_data = BaseAuthView().get_tokens_for_user(result['user'])
             
             return Response({
                 'success': True,
-                'data': {
-                    'message': result['message'],
-                    'token': token.key,
-                    'user_id': result['user_id'],
-                    'is_new': result['is_new']
-                }
+                'message': result['message'],
+                'is_new': result['is_new'],
+                'data': user_data
             }, status=status.HTTP_200_OK)
             
         except ValueError as e:
@@ -149,9 +143,110 @@ class GoogleAuthView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Google auth error: {str(e)}")
+
+
+# =============== LOGIN VIEWS ===============
+
+class EmailLoginView(APIView):
+    """Login with email and password"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = EmailLoginSerializer(data=request.data)
+        
+        if not serializer.is_valid():
             return Response({
                 'success': False,
-                'error': 'Authentication failed. Please try again.'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = AuthenticationService.login_with_password(
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+            
+            user_data = BaseAuthView().get_tokens_for_user(result['user'])
+            user_data['is_phone_verified'] = result['is_phone_verified']
+            
+            return Response({
+                'success': True,
+                'message': result['message'],
+                'data': user_data
+            }, status=status.HTTP_200_OK)
+            
+        except ValueError as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PhoneLoginView(APIView):
+    """Login with phone and password"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = PhoneLoginSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                'success': False,
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = AuthenticationService.login_with_phone(
+                phone=serializer.validated_data['phone'],
+                password=serializer.validated_data['password']
+            )
+            
+            user_data = BaseAuthView().get_tokens_for_user(result['user'])
+            user_data['is_phone_verified'] = result['is_phone_verified']
+            
+            return Response({
+                'success': True,
+                'message': result['message'],
+                'data': user_data
+            }, status=status.HTTP_200_OK)
+            
+        except ValueError as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GoogleLoginView(APIView):
+    """Login with Google OAuth (also handles registration if new user)"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = GoogleLoginSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                'success': False,
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            result = AuthenticationService.login_with_google(
+                email=serializer.validated_data['email'],
+                google_token=serializer.validated_data['google_token']
+            )
+            
+            user_data = BaseAuthView().get_tokens_for_user(result['user'])
+            
+            return Response({
+                'success': True,
+                'message': result['message'],
+                'is_new': result['is_new'],
+                'data': user_data
+            }, status=status.HTTP_200_OK)
+            
+        except ValueError as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
