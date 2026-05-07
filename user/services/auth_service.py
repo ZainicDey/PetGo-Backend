@@ -2,7 +2,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.db import transaction
-from models import UserModel, TemporaryUser
+from user.models import UserModel, TemporaryUser
 from django.utils import timezone
 import random
 

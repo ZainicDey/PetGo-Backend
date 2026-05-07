@@ -5,14 +5,14 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
-from .services.auth_service import AuthenticationService
-from .serializers import (
+from user.services.auth_service import AuthenticationService
+from user.serializers import (
     RegisterSerializer,
     OTPVerifySerializer,
     GoogleAuthSerializer,
-    EmailLoginSerializer,
-    PhoneLoginSerializer,
-    GoogleLoginSerializer
+    # EmailLoginSerializer,
+    # PhoneLoginSerializer,
+    # GoogleLoginSerializer
 )
 import logging
 
