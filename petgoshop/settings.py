@@ -45,12 +45,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'user',
+    'vet_finder',
 
     'rest_framework',
     'rest_framework_simplejwt',
 
     'corsheaders',
     'django_filters',
+    'drf_spectacular',
 ]
 
 REST_FRAMEWORK = {
@@ -67,6 +69,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # 'URL_TRAILING_SLASH': False,
 }
 
