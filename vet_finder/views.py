@@ -1,5 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAdminUser
 from .models import Tag, Hospital
 from .serializers import (
     TagSerializer,
@@ -19,6 +20,11 @@ class TagListCreateView(generics.ListCreateAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
+
 
 class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -30,6 +36,11 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
+
 
 # =============== HOSPITAL VIEWS ===============
 
@@ -39,6 +50,11 @@ class HospitalListCreateView(generics.ListCreateAPIView):
     POST → create a hospital with nested veterinarians & tag_ids
     """
     queryset = Hospital.objects.prefetch_related('tags').all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -54,6 +70,11 @@ class HospitalDetailView(generics.RetrieveUpdateDestroyAPIView):
     DELETE → delete hospital (cascades to veterinarians)
     """
     queryset = Hospital.objects.prefetch_related('tags', 'veterinarians').all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
 
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):

@@ -1,5 +1,7 @@
 # serializers.py
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.models import User
 import re
 
 # =============== REGISTRATION SERIALIZERS ===============
@@ -74,3 +76,24 @@ class GoogleLoginSerializer(serializers.Serializer):
     """Login with Google OAuth"""
     google_token = serializers.CharField(required=True)
     email = serializers.EmailField()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        
+        # Add custom claims
+        token['email'] = user.email
+        token['username'] = user.username
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        
+        try:
+            user_model = user.userinfo
+            token['phone'] = user_model.phone
+            token['is_phone_verified'] = user_model.is_phone_verified
+        except Exception:
+            token['phone'] = None
+            token['is_phone_verified'] = False
+            
+        return token

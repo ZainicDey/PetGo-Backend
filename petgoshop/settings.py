@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'django_filters',
+    
     'drf_spectacular',
 ]
 
@@ -71,6 +72,13 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # 'URL_TRAILING_SLASH': False,
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
 
 MIDDLEWARE = [
