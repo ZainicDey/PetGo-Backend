@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Hospital, Veterinarian
+from .models import Tag, House
 
 
 # =============== TAG SERIALIZER ===============
@@ -9,23 +9,14 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name']
 
-
-# =============== VETERINARIAN SERIALIZER ===============
-
-class VeterinarianSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Veterinarian
-        fields = ['id', 'image', 'name', 'specialization', 'experience', 'order']
-
-
 # =============== HOSPITAL SERIALIZERS ===============
 
-class HospitalListSerializer(serializers.ModelSerializer):
+class HouseSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing hospitals."""
     tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Hospital
+        model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
@@ -33,37 +24,34 @@ class HospitalListSerializer(serializers.ModelSerializer):
         ]
 
 
-class HospitalDetailSerializer(serializers.ModelSerializer):
-    """Full serializer — includes nested veterinarians."""
+class HouseDetailSerializer(serializers.ModelSerializer):
+    """Full serializer"""
     tags = TagSerializer(many=True, read_only=True)
-    veterinarians = VeterinarianSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Hospital
+        model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'veterinarians', 'created_at', 'updated_at',
+            'tags', 'created_at', 'updated_at',
         ]
 
 
-class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
+class HouseCreateUpdateSerializer(serializers.ModelSerializer):
     """
     Accepts the full hospital payload including:
       - tag_ids: list of existing Tag PKs  (e.g. [1, 3, 5])
-      - veterinarians: list of vet objects  (created / replaced on save)
     """
     tag_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False
     )
-    veterinarians = VeterinarianSerializer(many=True, required=False, write_only=True)
 
     class Meta:
-        model = Hospital
+        model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tag_ids', 'veterinarians', 'created_at', 'updated_at',
+            'tag_ids', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -107,17 +95,11 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
         tag_ids = validated_data.pop('tag_ids', [])
         vets_data = validated_data.pop('veterinarians', [])
 
-        hospital = Hospital.objects.create(**validated_data)
+        hospital = House.objects.create(**validated_data)
 
         # Set M2M tags
         if tag_ids:
             hospital.tags.set(tag_ids)
-
-        # Bulk-create veterinarians
-        if vets_data:
-            Veterinarian.objects.bulk_create([
-                Veterinarian(hospital=hospital, **vet) for vet in vets_data
-            ])
 
         return hospital
 
@@ -134,15 +116,8 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
         if tag_ids is not None:
             instance.tags.set(tag_ids)
 
-        # Replace veterinarians if provided
-        if vets_data is not None:
-            instance.veterinarians.all().delete()
-            Veterinarian.objects.bulk_create([
-                Veterinarian(hospital=instance, **vet) for vet in vets_data
-            ])
-
         return instance
 
     def to_representation(self, instance):
         """Return the full detail representation after create/update."""
-        return HospitalDetailSerializer(instance).data
+        return HouseDetailSerializer(instance).data

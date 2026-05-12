@@ -1,10 +1,14 @@
-# services/auth_service.py
+# user/services/auth_service.py
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.db import transaction
 from user.models import UserModel, TemporaryUser
 from django.utils import timezone
 import random
+import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AuthenticationService:
     
@@ -41,6 +45,7 @@ class AuthenticationService:
         )
         
         # Send OTP via SMS
+        from user.services.sms_service import SMSService
         SMSService.send_otp(phone, otp)
         
         return {
@@ -101,51 +106,106 @@ class AuthenticationService:
             'message': 'Registration successful'
         }
     
+    # =============== GOOGLE AUTH METHODS ===============
+    
     @staticmethod
-    def register_with_google(email, username, first_name, last_name, phone, google_id):
-        """Handle Google OAuth registration"""
+    def login_or_register_with_google(google_token):
+        """
+        Verify Google token and login/register user
         
-        # Check if user exists
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-            user.first_name = first_name
-            user.last_name = last_name
-            user.save()
+        Args:
+            google_token: Google ID Token from frontend
             
-            user_model, created = UserModel.objects.update_or_create(
+        Returns:
+            dict with user info and tokens
+        """
+        # ✅ FIXED: Import from the correct module
+        from .google_service import GoogleAuthService
+        
+        # Step 1: Verify the token with Google
+        try:
+            google_data = GoogleAuthService.verify_google_id_token(google_token)
+        except ValueError as e:
+            raise ValueError(f"Google authentication failed: {str(e)}")
+        
+        # google_data now contains VERIFIED user info:
+        # {
+        #     'google_id': '1234567890',
+        #     'email': 'john@gmail.com',
+        #     'first_name': 'John',
+        #     'last_name': 'Doe',
+        #     'name': 'John Doe',
+        #     'picture': 'https://...',
+        #     'email_verified': True
+        # }
+        
+        # Step 2: Check if user exists by email
+        try:
+            user = User.objects.get(email=google_data['email'])
+            is_new_user = False
+            
+            # Update user info if needed
+            updated = False
+            if not user.first_name and google_data['first_name']:
+                user.first_name = google_data['first_name']
+                updated = True
+            if not user.last_name and google_data['last_name']:
+                user.last_name = google_data['last_name']
+                updated = True
+            
+            if updated:
+                user.save()
+            
+            # Ensure UserModel exists
+            UserModel.objects.get_or_create(
                 user=user,
                 defaults={
-                    'phone': phone,
+                    'phone': '',
                     'is_phone_verified': False
                 }
             )
             
-            return {
-                'user': user,
-                'is_new': False,
-                'message': 'Logged in with Google'
-            }
-        
-        # Create new user
-        with transaction.atomic():
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                password=User.objects.make_random_password()
-            )
+        except User.DoesNotExist:
+            # Step 3: Create new user
+            is_new_user = True
             
-            user_model = UserModel.objects.create(
-                user=user,
-                phone=phone,
-                is_phone_verified=False
-            )
+            with transaction.atomic():
+                # Generate unique username from email
+                base_username = google_data['email'].split('@')[0]
+                base_username = re.sub(r'[^a-zA-Z0-9_]', '_', base_username)
+                
+                username = base_username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                # Create user
+                user = User.objects.create(
+                    username=username,
+                    email=google_data['email'],
+                    first_name=google_data['first_name'],
+                    last_name=google_data['last_name'],
+                    password='!'  # Temporary placeholder
+                )
+                
+                # Set unusable password (can't login with password)
+                user.set_unusable_password()
+                user.save()
+                
+                # Create UserModel
+                UserModel.objects.create(
+                    user=user,
+                    phone='',  # Google doesn't provide phone
+                    is_phone_verified=False
+                )
         
+        # Step 4: Return result
         return {
             'user': user,
-            'is_new': True,
-            'message': 'Registration with Google successful'
+            'is_new': is_new_user,
+            'google_data': google_data,
+            'message': 'Logged in with Google' if not is_new_user else 'Registered with Google'
         }
     
     # =============== LOGIN METHODS ===============
@@ -212,34 +272,4 @@ class AuthenticationService:
             'user': user,
             'is_phone_verified': True,
             'message': 'Login successful'
-        }
-    
-    @staticmethod
-    def login_with_google(email, google_token):
-        """Login with Google OAuth"""
-        
-        # Verify Google token
-        # google_data = GoogleService.verify_token(google_token)
-        
-        # Find or create user
-        try:
-            user = User.objects.get(email=email)
-            is_new = False
-        except User.DoesNotExist:
-            # Auto-register if user doesn't exist
-            result = AuthenticationService.register_with_google(
-                email=email,
-                username=email.split('@')[0],  # Or get from Google data
-                first_name='',  # Get from Google data
-                last_name='',   # Get from Google data
-                phone='',       # Get from Google data if available
-                google_id=''    # Get from Google data
-            )
-            user = result['user']
-            is_new = True
-        
-        return {
-            'user': user,
-            'is_new': is_new,
-            'message': 'Google login successful'
         }

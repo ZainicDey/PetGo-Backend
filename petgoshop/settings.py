@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'user',
     'vet_finder',
+    'foster_house_finder',
 
     'rest_framework',
     'rest_framework_simplejwt',
