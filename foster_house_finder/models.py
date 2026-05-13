@@ -38,3 +38,11 @@ class House(models.Model):
     def __str__(self):
         return self.name
 
+from django.contrib.auth.models import User
+
+class Appointment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='foster_house_appointments')
+    house = models.ForeignKey(House, on_delete=models.CASCADE, null=True, blank=True, related_name='foster_house_appointments')
+
+    def __str__(self):
+        return self.user.username

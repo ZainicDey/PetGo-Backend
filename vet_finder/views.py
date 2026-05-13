@@ -1,12 +1,15 @@
+from vet_finder.models import Appointment
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from .models import Tag, Hospital
 from .serializers import (
     TagSerializer,
     HospitalListSerializer,
     HospitalDetailSerializer,
     HospitalCreateUpdateSerializer,
+    AppointmentCreateSerializer,
+    AppointmentDetailSerializer
 )
 
 
@@ -80,3 +83,19 @@ class HospitalDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ('PUT', 'PATCH'):
             return HospitalCreateUpdateSerializer
         return HospitalDetailSerializer
+
+class AppointmentListView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Appointment.objects.all()
+        return Appointment.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AppointmentCreateSerializer
+        return AppointmentDetailSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

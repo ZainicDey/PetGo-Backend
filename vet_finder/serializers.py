@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Hospital, Veterinarian
+from .models import Tag, Hospital, Veterinarian, Appointment
 
 
 # =============== TAG SERIALIZER ===============
@@ -146,3 +146,30 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Return the full detail representation after create/update."""
         return HospitalDetailSerializer(instance).data
+
+from django.contrib.auth.models import User
+from .models import Appointment, Hospital
+
+class UserSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(source='userinfo.phone', read_only=True)
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone']
+
+class HospitalInAppSerializer(serializers.ModelSerializer):   # must be defined
+    class Meta:
+        model = Hospital
+        fields = ['id', 'image', 'name', 'address']
+
+class AppointmentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = ['id', 'hospital']
+
+class AppointmentDetailSerializer(serializers.ModelSerializer):
+    hospital = HospitalInAppSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = ['id', 'hospital', 'user']

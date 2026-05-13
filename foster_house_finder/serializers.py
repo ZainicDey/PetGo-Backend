@@ -121,3 +121,30 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Return the full detail representation after create/update."""
         return HouseDetailSerializer(instance).data
+
+from django.contrib.auth.models import User
+from .models import Appointment, House
+
+class UserSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(source='userinfo.phone', read_only=True)
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone']
+
+class HouseInAppSerializer(serializers.ModelSerializer):   # must be defined
+    class Meta:
+        model = House
+        fields = ['id', 'image', 'name', 'address']
+
+class AppointmentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = ['id', 'house']
+
+class AppointmentDetailSerializer(serializers.ModelSerializer):
+    house = HouseInAppSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = ['id', 'house', 'user']
