@@ -9,4 +9,7 @@ urlpatterns = [
     # Hospitals
     path('vet-finder/hospitals/', views.HospitalListCreateView.as_view(), name='hospital-list-create'),
     path('vet-finder/hospitals/<int:pk>/', views.HospitalDetailView.as_view(), name='hospital-detail'),
+
+    # Appointments
+    path('vet-finder/appointments/', views.AppointmentListView.as_view(), name='appointment-list-create'),
 ]

@@ -26,27 +26,106 @@ logger = logging.getLogger(__name__)
 
 # =============== JWT TOKEN VIEWS ===============
 
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+User = get_user_model()
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiExample
+
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """Login with email/password to get JWT tokens"""
-    serializer_class = CustomTokenObtainPairSerializer
-    
+    @extend_schema(
+        # request={
+        #     'application/json': {
+        #         'type': 'object',
+        #         'description': 'You must provide exactly one of: username, email, or phone, along with the password.',
+        #         'properties': {
+        #             'username': {'type': 'string', 'nullable': True},
+        #             'email': {'type': 'string', 'format': 'email', 'nullable': True},
+        #             'phone': {'type': 'string', 'nullable': True},
+        #             'password': {'type': 'string'},
+        #         },
+        #         'required': ['password']
+        #     }
+        # },  
+        examples=[
+            OpenApiExample(
+                'Login with email',
+                value={'email': 'anik@gmail.com', 'password': 'anikanik'},
+                request_only=True,
+            ),
+            OpenApiExample(
+                'Login with phone',
+                value={'phone': '01823233034', 'password': 'anikanik'},
+                request_only=True,
+            ),
+            OpenApiExample(
+                'Login with username',
+                value={'username': 'anik', 'password': 'anikanik'},
+                request_only=True,
+            ),
+        ]
+    )
     def post(self, request, *args, **kwargs):
-        """POST: { "username": "anik", "password": "anikanik" }"""
-        request_data = request.data.copy()
-        print(request.data)
-        try:
-            user = User.objects.get(username=request_data.get('username', ''))
-            print(user.email)
-            request_data['username'] = user.username
-        except User.DoesNotExist:
-            return Response({
-                'success': False,
-                'error': 'Invalid username or password'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
+        request_data = request.data.copy()   # mutable copy
+
+        # Which identifier was provided?
+        username = request_data.get('username')
+        email = request_data.get('email')
+        phone = request_data.get('phone')
+
+        # Only one should be used; password is separate
+        password = request_data.get('password')
+
+        if not password:
+            return Response(
+                {'success': False, 'error': 'Password is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = None
+        lookup_field = None
+
+        if username:
+            lookup_field = 'username'
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                pass
+        elif email:
+            lookup_field = 'email'
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                pass
+        elif phone:
+            lookup_field = 'phone'   # assuming your User model has a phone field
+            try:
+                user = User.objects.get(phone=phone)
+            except User.DoesNotExist:
+                pass
+        else:
+            return Response(
+                {'success': False, 'error': 'Provide username, email, or phone'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if user is None:
+            return Response(
+                {'success': False, 'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Normalise the payload: always send the canonical username
+        request_data['username'] = user.username
+        # Remove the other identifier(s) so they don't interfere
+        request_data.pop('email', None)
+        request_data.pop('phone', None)
+
+        # Inject our modified data back into the request
         request._full_data = request_data
         return super().post(request, *args, **kwargs)
-
 
 class TokenRefreshViewCustom(TokenRefreshView):
     """Refresh an expired access token"""

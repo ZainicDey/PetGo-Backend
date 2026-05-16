@@ -29,10 +29,10 @@ urlpatterns = [
     # =============== ALTERNATIVE LOGIN ENDPOINTS ===============
     
     # Login with email/password (alternative to standard JWT endpoint)
-    path('auth/login/email/', views.EmailLoginView.as_view(), name='email-login'),
+    # path('auth/login/email/', views.EmailLoginView.as_view(), name='email-login'),
     
     # Login with phone/password
-    path('auth/login/phone/', views.PhoneLoginView.as_view(), name='phone-login'),
+    # path('auth/login/phone/', views.PhoneLoginView.as_view(), name='phone-login'),
     
     # Login with Google
     path('auth/login/google/', views.GoogleLoginView.as_view(), name='google-login'),

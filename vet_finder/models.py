@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Tag(models.Model):
     """Pre-created tags that can be selected when creating a hospital."""
@@ -59,6 +60,19 @@ class Veterinarian(models.Model):
 class Appointment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vet_appointments', null=True, blank=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='vet_appointments', null=True, blank=True)
+
+    def __str__(self):
+        return self.user.username
+
+class VetReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vet_reviews', null=True, blank=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='vet_reviews', null=True, blank=True)
+    review = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+
+    class Meta:
+        # optional: a user can only review a hospital once
+        unique_together = ['user', 'hospital']
 
     def __str__(self):
         return self.user.username

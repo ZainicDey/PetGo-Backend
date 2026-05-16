@@ -46,3 +46,16 @@ class Appointment(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class HouseReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='house_reviews', null=True, blank=True)
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_reviews', null=True, blank=True)
+    review = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+
+    class Meta:
+        # optional: a user can only review a hospital once
+        unique_together = ['user', 'house']
+
+    def __str__(self):
+        return self.user.username
