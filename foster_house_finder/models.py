@@ -1,9 +1,14 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-class Tag(models.Model):
+class FosterHouseTag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     
+    def __str__(self):
+        return self.name
+    
+class FosterHouseServices(models.Model):
+    name = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return self.name
 
@@ -27,9 +32,9 @@ class House(models.Model):
     phone_number = models.CharField(max_length=20)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
     # Tags
-    # Using ManyToManyField instead of ForeignKey because you mentioned
-    # "select one of or multiple of them". A ForeignKey only allows selecting one.
-    tags = models.ManyToManyField(Tag, blank=True, related_name='foster_houses')
+    tags = models.ManyToManyField(FosterHouseTag, blank=True, related_name='foster_houses')
+    # Services
+    services = models.ManyToManyField(FosterHouseServices, blank=True, related_name='foster_houses')
     
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -52,6 +57,9 @@ class HouseReview(models.Model):
     house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_reviews', null=True, blank=True)
     review = models.TextField()
     rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         # optional: a user can only review a hospital once

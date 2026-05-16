@@ -1,9 +1,9 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from .models import Tag, House, Appointment
+from .models import FosterHouseTag, House, Appointment
 from .serializers import (
-    TagSerializer,
+    FosterHouseTagSerializer,
     HouseSerializer,
     HouseDetailSerializer,
     HouseCreateUpdateSerializer,
@@ -19,8 +19,8 @@ class TagListCreateView(generics.ListCreateAPIView):
     GET  → list all available tags
     POST → create a new tag  {"name": "dental care"}
     """
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+    queryset = FosterHouseTag.objects.all()
+    serializer_class = FosterHouseTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -35,8 +35,8 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     PATCH  → partial update
     DELETE → delete tag
     """
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+    queryset = FosterHouseTag.objects.all()
+    serializer_class = FosterHouseTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':

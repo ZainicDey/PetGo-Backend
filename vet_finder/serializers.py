@@ -1,14 +1,19 @@
 from rest_framework import serializers
-from .models import Tag, Hospital, Veterinarian, Appointment
+from .models import HospitalTag, Hospital, Veterinarian, Appointment, HostpitalReview, HostpitalReviewReply, HospitalServices
 
 
 # =============== TAG SERIALIZER ===============
 
-class TagSerializer(serializers.ModelSerializer):
+class HospitalTagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
+        model = HospitalTag
         fields = ['id', 'name']
 
+# =============== HOSPITAL SERVICES SERIALIZER ===============
+class HospitalServicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HospitalServices
+        fields = ['id', 'name']
 
 # =============== VETERINARIAN SERIALIZER ===============
 
@@ -22,20 +27,22 @@ class VeterinarianSerializer(serializers.ModelSerializer):
 
 class HospitalListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing hospitals."""
-    tags = TagSerializer(many=True, read_only=True)
+    tags = HospitalTagSerializer(many=True, read_only=True)
+    services = HospitalServicesSerializer(many=True, read_only=True)
 
     class Meta:
         model = Hospital
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'created_at', 'updated_at',
+            'tags', 'services','created_at', 'updated_at',
         ]
 
 
 class HospitalDetailSerializer(serializers.ModelSerializer):
     """Full serializer — includes nested veterinarians."""
-    tags = TagSerializer(many=True, read_only=True)
+    tags = HospitalTagSerializer(many=True, read_only=True)
+    services = HospitalServicesSerializer(many=True, read_only=True)
     veterinarians = VeterinarianSerializer(many=True, read_only=True)
 
     class Meta:
@@ -43,7 +50,7 @@ class HospitalDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'veterinarians', 'created_at', 'updated_at',
+            'tags', 'services', 'veterinarians', 'created_at', 'updated_at',
         ]
 
 
@@ -56,6 +63,9 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
     tag_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False
     )
+    services_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
     veterinarians = VeterinarianSerializer(many=True, required=False, write_only=True)
 
     class Meta:
@@ -63,7 +73,7 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tag_ids', 'veterinarians', 'created_at', 'updated_at',
+            'tag_ids', 'services_ids', 'veterinarians', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -71,12 +81,19 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_tag_ids(self, value):
         """Make sure every supplied tag ID actually exists."""
-        existing = set(Tag.objects.filter(id__in=value).values_list('id', flat=True))
+        existing = set(HospitalTag.objects.filter(id__in=value).values_list('id', flat=True))
         missing = set(value) - existing
         if missing:
             raise serializers.ValidationError(
                 f"Tags with ids {missing} do not exist."
             )
+        return value
+    def validate_services_ids(self, value):
+        """Ensure service IDs exist (if supplied)."""
+        existing = set(HospitalServices.objects.filter(id__in=value).values_list('id', flat=True))
+        missing = set(value) - existing
+        if missing:
+            raise serializers.ValidationError(f"Services with IDs {missing} do not exist.")
         return value
 
     VALID_DAYS = {
@@ -105,6 +122,7 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tag_ids = validated_data.pop('tag_ids', [])
+        services_ids = validated_data.pop('services_ids', [])
         vets_data = validated_data.pop('veterinarians', [])
 
         hospital = Hospital.objects.create(**validated_data)
@@ -112,6 +130,9 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
         # Set M2M tags
         if tag_ids:
             hospital.tags.set(tag_ids)
+        # Set M2M services
+        if services_ids:
+            hospital.services.set(services_ids)
 
         # Bulk-create veterinarians
         if vets_data:
@@ -123,6 +144,7 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tag_ids = validated_data.pop('tag_ids', None)
+        services_ids = validated_data.pop('services_ids', None)
         vets_data = validated_data.pop('veterinarians', None)
 
         # Update scalar fields
@@ -140,7 +162,11 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
             Veterinarian.objects.bulk_create([
                 Veterinarian(hospital=instance, **vet) for vet in vets_data
             ])
-
+        
+        # Update services if provided
+        if services_ids is not None:
+            instance.services.set(services_ids)
+    
         return instance
 
     def to_representation(self, instance):
@@ -173,3 +199,18 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = ['id', 'hospital', 'user']
+
+class HostpitalReviewReplySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = HostpitalReviewReply
+        fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'created_at', 'updated_at']
+
+class HostpitalReviewSerializer(serializers.ModelSerializer):
+    replies = HostpitalReviewReplySerializer(many=True, read_only=True, source='vet_review_replies')
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = HostpitalReview
+        fields = ['id', 'hospital', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
+        read_only_fields = ['user','replies', 'created_at', 'updated_at']

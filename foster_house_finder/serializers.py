@@ -1,39 +1,45 @@
 from rest_framework import serializers
-from .models import Tag, House
-
+from .models import FosterHouseTag, House, FosterHouseServices
 
 # =============== TAG SERIALIZER ===============
 
-class TagSerializer(serializers.ModelSerializer):
+class FosterHouseTagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
+        model = FosterHouseTag
         fields = ['id', 'name']
 
+class FosterHouseServicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FosterHouseServices
+        fields = ['id', 'name']
+        
 # =============== HOSPITAL SERIALIZERS ===============
 
 class HouseSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing hospitals."""
-    tags = TagSerializer(many=True, read_only=True)
+    tags = FosterHouseTagSerializer(many=True, read_only=True)
+    services = FosterHouseServicesSerializer(many=True, read_only=True)
 
     class Meta:
         model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'created_at', 'updated_at',
+            'tags', 'services', 'created_at', 'updated_at',
         ]
 
 
 class HouseDetailSerializer(serializers.ModelSerializer):
     """Full serializer"""
-    tags = TagSerializer(many=True, read_only=True)
+    tags = FosterHouseTagSerializer(many=True, read_only=True)
+    services = FosterHouseServicesSerializer(many=True, read_only=True)
 
     class Meta:
         model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'created_at', 'updated_at',
+            'tags', 'services', 'created_at', 'updated_at',
         ]
 
 
@@ -45,13 +51,16 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
     tag_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False
     )
+    service_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
 
     class Meta:
         model = House
         fields = [
             'id', 'image', 'name', 'about', 'address', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tag_ids', 'created_at', 'updated_at',
+            'tag_ids', 'service_ids', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -59,11 +68,21 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_tag_ids(self, value):
         """Make sure every supplied tag ID actually exists."""
-        existing = set(Tag.objects.filter(id__in=value).values_list('id', flat=True))
+        existing = set(FosterHouseTag.objects.filter(id__in=value).values_list('id', flat=True))
         missing = set(value) - existing
         if missing:
             raise serializers.ValidationError(
                 f"Tags with ids {missing} do not exist."
+            )
+        return value
+
+    def validate_service_ids(self, value):
+        """Make sure every supplied service ID actually exists."""
+        existing = set(FosterHouseServices.objects.filter(id__in=value).values_list('id', flat=True))
+        missing = set(value) - existing
+        if missing:
+            raise serializers.ValidationError(
+                f"Services with ids {missing} do not exist."
             )
         return value
 
@@ -93,19 +112,23 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tag_ids = validated_data.pop('tag_ids', [])
-        vets_data = validated_data.pop('veterinarians', [])
+        service_ids = validated_data.pop('service_ids', [])
 
-        hospital = House.objects.create(**validated_data)
+        house = House.objects.create(**validated_data)
 
         # Set M2M tags
         if tag_ids:
-            hospital.tags.set(tag_ids)
+            house.tags.set(tag_ids)
+        
+        # Set M2M services
+        if service_ids:
+            house.services.set(service_ids)
 
-        return hospital
+        return house
 
     def update(self, instance, validated_data):
         tag_ids = validated_data.pop('tag_ids', None)
-        vets_data = validated_data.pop('veterinarians', None)
+        service_ids = validated_data.pop('service_ids', None)
 
         # Update scalar fields
         for attr, value in validated_data.items():
@@ -115,6 +138,10 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
         # Update tags if provided
         if tag_ids is not None:
             instance.tags.set(tag_ids)
+        
+        # Update services if provided
+        if service_ids is not None:
+            instance.services.set(service_ids)
 
         return instance
 

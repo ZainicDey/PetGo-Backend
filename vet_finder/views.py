@@ -1,15 +1,17 @@
-from vet_finder.models import Appointment
+
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from .models import Tag, Hospital
+from .models import HospitalTag, Hospital, Appointment, HostpitalReview, HostpitalReviewReply
 from .serializers import (
-    TagSerializer,
+    HospitalTagSerializer,
     HospitalListSerializer,
     HospitalDetailSerializer,
     HospitalCreateUpdateSerializer,
     AppointmentCreateSerializer,
-    AppointmentDetailSerializer
+    AppointmentDetailSerializer,
+    VetReviewSerializer,
+    VetReviewReplySerializer,
 )
 
 
@@ -20,8 +22,8 @@ class TagListCreateView(generics.ListCreateAPIView):
     GET  → list all available tags
     POST → create a new tag  {"name": "dental care"}
     """
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+    queryset = HospitalTag.objects.all()
+    serializer_class = HospitalTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -36,8 +38,8 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     PATCH  → partial update
     DELETE → delete tag
     """
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+    queryset = HospitalTag.objects.all()
+    serializer_class = HospitalTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -99,3 +101,38 @@ class AppointmentListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+from django.views.generic import ModelViewSet
+from rest_framework import permissions
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
+class HospitalReviewViewSet(ModelViewSet):
+    queryset = HostpitalReview.objects.select_related('user', 'hospital') \
+                                  .prefetch_related('vet_review_replies__user')
+    serializer_class = HostpitalReviewSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsOwnerOrReadOnly()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class HospitalReviewReplyViewSet(ModelViewSet):
+    queryset = HostpitalReviewReply.objects.all()
+    serializer_class = HostpitalReviewReplySerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsOwnerOrReadOnly()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+

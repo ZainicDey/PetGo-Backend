@@ -1,5 +1,10 @@
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'vet-finder/reviews', views.VetReviewListView, basename='vet-review')
+
 
 urlpatterns = [
     # Tags
