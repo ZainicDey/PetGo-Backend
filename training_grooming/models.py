@@ -1,0 +1,116 @@
+from django.db import models, transaction
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class TrainingGroomingTag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.name
+    
+class TrainingGroomingServices(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    def __str__(self):
+        return self.name
+
+class TrainingGrooming(models.Model):
+    # Basic Info
+    image = models.CharField(max_length=500, blank=True, null=True)
+    name = models.CharField(max_length=200)
+    about = models.TextField()
+    street = models.TextField()
+    area = models.TextField()
+    city = models.TextField()
+    website = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Reviews
+    review_count = models.IntegerField(default=0)
+    review_sum = models.IntegerField(default=0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0)
+    # Opening Hours — stores a dict of day → {open, close}
+    opening_hours = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='e.g. {"saturday": {"open": "09:00", "close": "18:00"}, ...}'
+    )
+
+
+    # Contact Info
+    phone_number = models.CharField(max_length=20)
+    whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
+    # Tags
+    tags = models.ManyToManyField(TrainingGroomingTag, blank=True, related_name='training_grooming')
+    # Services
+    services = models.ManyToManyField(TrainingGroomingServices, blank=True, related_name='training_grooming')
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+
+from django.contrib.auth.models import User
+
+class Appointment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='training_grooming_appointments')
+    training_grooming = models.ForeignKey(TrainingGrooming, on_delete=models.CASCADE, null=True, blank=True, related_name='training_grooming_appointments')
+
+    def __str__(self):
+        return self.user.username
+
+
+class TrainingGroomingReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_grooming_reviews', null=True, blank=True)
+    training_grooming = models.ForeignKey(TrainingGrooming, on_delete=models.CASCADE, related_name='training_grooming_reviews', null=True, blank=True)
+    review = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # optional: a user can only review a hospital once
+        unique_together = ['user', 'training_grooming']
+
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
+        with transaction.atomic():
+            training_grooming = TrainingGrooming.objects.select_for_update().get(pk=self.training_grooming_id)
+
+            if not is_new:
+                old = TrainingGroomingReview.objects.get(pk=self.pk)
+                training_grooming.review_sum -= old.rating  # remove old rating first
+
+            super().save(*args, **kwargs)
+
+            if is_new:
+                training_grooming.review_count += 1
+
+            training_grooming.review_sum += self.rating
+            training_grooming.average_rating = round(training_grooming.review_sum / training_grooming.review_count, 1)
+            training_grooming.save(update_fields=['review_count', 'review_sum', 'average_rating'])
+
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            training_grooming = TrainingGrooming.objects.select_for_update().get(pk=self.training_grooming_id)
+            training_grooming.review_sum -= self.rating
+            training_grooming.review_count -= 1
+            training_grooming.average_rating = (
+                round(training_grooming.review_sum / training_grooming.review_count, 1)
+                if training_grooming.review_count > 0 else 0
+            )
+            super().delete(*args, **kwargs)
+            training_grooming.save(update_fields=['review_count', 'review_sum', 'average_rating'])
+
+class TrainingGroomingReviewReply(models.Model):
+    review = models.ForeignKey(TrainingGroomingReview, on_delete=models.CASCADE, related_name='training_grooming_review_replies', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_grooming_review_replies', null=True, blank=True)
+    reply = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.reply

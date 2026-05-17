@@ -6,6 +6,7 @@ from .views import (
     HouseListCreateView,
     HouseDetailView,
     AppointmentListView,
+    AppointmentDetailView,
     HouseReviewViewSet,
     HouseReviewReplyViewSet,
 )

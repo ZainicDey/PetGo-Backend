@@ -1,16 +1,15 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from .models import FosterHouseTag, House, Appointment, HouseReview, HouseReviewReply
+from .models import TrainingGrooming,Appointment,TrainingGroomingReview,TrainingGroomingReviewReply
 from .serializers import (
-    FosterHouseTagSerializer,
-    HouseSerializer,
-    HouseDetailSerializer,
-    HouseCreateUpdateSerializer,
+    TrainingGroomingSerializer,
+    TrainingGroomingDetailSerializer,
+    TrainingGroomingCreateUpdateSerializer,
     AppointmentCreateSerializer,
     AppointmentDetailSerializer,
-    HouseReviewSerializer,
-    HouseReviewReplySerializer
+    TrainingGroomingReviewSerializer,
+    TrainingGroomingReviewReplySerializer
 )
 
 
@@ -21,8 +20,8 @@ class TagListCreateView(generics.ListCreateAPIView):
     GET  → list all available tags
     POST → create a new tag  {"name": "dental care"}
     """
-    queryset = FosterHouseTag.objects.all()
-    serializer_class = FosterHouseTagSerializer
+    queryset = TrainingGrooming.objects.all()
+    serializer_class = TrainingGroomingSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -37,8 +36,8 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     PATCH  → partial update
     DELETE → delete tag
     """
-    queryset = FosterHouseTag.objects.all()
-    serializer_class = FosterHouseTagSerializer
+    queryset = TrainingGrooming.objects.all()
+    serializer_class = TrainingGroomingSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -46,14 +45,14 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [IsAdminUser()]
 
 
-# =============== HOUSE VIEWS ===============
+# =============== Trainin & Grooming VIEWS ===============
 
-class HouseListCreateView(generics.ListCreateAPIView):
+class TrainingGroomingListCreateView(generics.ListCreateAPIView):
     """
-    GET  → list all houses (lightweight, no veterinarians)
-    POST → create a house with nested veterinarians & tag_ids
+    GET  → list all Training & Grooming (lightweight, no veterinarians)
+    POST → create a Training & Grooming with nested veterinarians & tag_ids
     """
-    queryset = House.objects.prefetch_related('tags').all()
+    queryset = TrainingGrooming.objects.prefetch_related('tags').all()
     
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -62,18 +61,18 @@ class HouseListCreateView(generics.ListCreateAPIView):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return HouseCreateUpdateSerializer
-        return HouseSerializer
+            return TrainingGroomingCreateUpdateSerializer
+        return TrainingGroomingSerializer
 
 
-class HouseDetailView(generics.RetrieveUpdateDestroyAPIView):
+class TrainingGroomingDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    GET    → full house detail (includes veterinarians list)
+    GET    → full Training & Grooming detail (includes veterinarians list)
     PUT    → full update
     PATCH  → partial update
-    DELETE → delete house (cascades to veterinarians)
+    DELETE → delete Training & Grooming (cascades to veterinarians)
     """
-    queryset = House.objects.prefetch_related('tags', 'veterinarians').all()
+    queryset = TrainingGrooming.objects.prefetch_related('tags', 'veterinarians').all()
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -82,8 +81,8 @@ class HouseDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):
-            return HouseCreateUpdateSerializer
-        return HouseDetailSerializer
+            return TrainingGroomingCreateUpdateSerializer
+        return TrainingGroomingDetailSerializer
 
 class AppointmentListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -105,10 +104,10 @@ from rest_framework.viewsets import ModelViewSet
 from vet_finder.views import IsOwnerOrReadOnly
 
 
-class HouseReviewViewSet(ModelViewSet):
-    queryset = HouseReview.objects.select_related('user', 'house') \
-                                  .prefetch_related('house_review_replies__user')
-    serializer_class = HouseReviewSerializer
+class TrainingGroomingReviewViewSet(ModelViewSet):
+    queryset = TrainingGroomingReview.objects.select_related('user', 'grooming') \
+                                  .prefetch_related('training_grooming_review_replies__user')
+    serializer_class = TrainingGroomingReviewSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -118,9 +117,9 @@ class HouseReviewViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class HouseReviewReplyViewSet(ModelViewSet):
-    queryset = HouseReviewReply.objects.select_related('user', 'review').all()
-    serializer_class = HouseReviewReplySerializer
+class TrainingGroomingReviewReplyViewSet(ModelViewSet):
+    queryset = TrainingGroomingReviewReply.objects.select_related('user', 'review').all()
+    serializer_class = TrainingGroomingReviewReplySerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':

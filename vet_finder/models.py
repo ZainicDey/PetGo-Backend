@@ -22,7 +22,7 @@ class Hospital(models.Model):
     street = models.TextField()
     area = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-    website = models.URLField(blank=True, null=True)
+    website = models.CharField(max_length=200, blank=True, null=True)
 
     # Opening Hours — stores a dict of day → {open, close}
     opening_hours = models.JSONField(

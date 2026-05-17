@@ -16,21 +16,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='FosterHouseServices',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='FosterHouseTag',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='House',
+            name='TrainingGrooming',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('image', models.CharField(blank=True, max_length=500, null=True)),
@@ -48,42 +34,64 @@ class Migration(migrations.Migration):
                 ('whatsapp_number', models.CharField(blank=True, max_length=20, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('services', models.ManyToManyField(blank=True, related_name='foster_houses', to='foster_house_finder.fosterhouseservices')),
-                ('tags', models.ManyToManyField(blank=True, related_name='foster_houses', to='foster_house_finder.fosterhousetag')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='TrainingGroomingServices',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=50, unique=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='TrainingGroomingTag',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=50, unique=True)),
             ],
         ),
         migrations.CreateModel(
             name='Appointment',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='foster_house_appointments', to=settings.AUTH_USER_MODEL)),
-                ('house', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='foster_house_appointments', to='foster_house_finder.house')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_appointments', to=settings.AUTH_USER_MODEL)),
+                ('training_grooming', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_appointments', to='training_grooming.traininggrooming')),
             ],
         ),
         migrations.CreateModel(
-            name='HouseReview',
+            name='TrainingGroomingReview',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('review', models.TextField()),
                 ('rating', models.IntegerField(validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(5)])),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('house', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='house_reviews', to='foster_house_finder.house')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='house_reviews', to=settings.AUTH_USER_MODEL)),
+                ('training_grooming', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_reviews', to='training_grooming.traininggrooming')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_reviews', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'unique_together': {('user', 'house')},
+                'unique_together': {('user', 'training_grooming')},
             },
         ),
         migrations.CreateModel(
-            name='HouseReviewReply',
+            name='TrainingGroomingReviewReply',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('reply', models.TextField()),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('review', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='house_review_replies', to='foster_house_finder.housereview')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='house_review_replies', to=settings.AUTH_USER_MODEL)),
+                ('review', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_review_replies', to='training_grooming.traininggroomingreview')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='training_grooming_review_replies', to=settings.AUTH_USER_MODEL)),
             ],
+        ),
+        migrations.AddField(
+            model_name='traininggrooming',
+            name='services',
+            field=models.ManyToManyField(blank=True, related_name='training_grooming', to='training_grooming.traininggroomingservices'),
+        ),
+        migrations.AddField(
+            model_name='traininggrooming',
+            name='tags',
+            field=models.ManyToManyField(blank=True, related_name='training_grooming', to='training_grooming.traininggroomingtag'),
         ),
     ]

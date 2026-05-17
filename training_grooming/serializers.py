@@ -1,41 +1,41 @@
 from rest_framework import serializers
-from .models import FosterHouseTag, House, FosterHouseServices, HouseReview, HouseReviewReply
+from .models import TrainingGroomingTag, TrainingGrooming, TrainingGroomingServices, TrainingGroomingReview, TrainingGroomingReviewReply
 
 # =============== TAG SERIALIZER ===============
 
-class FosterHouseTagSerializer(serializers.ModelSerializer):
+class TrainingGroomingTagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FosterHouseTag
+        model = TrainingGroomingTag
         fields = ['id', 'name']
 
-class FosterHouseServicesSerializer(serializers.ModelSerializer):
+class TrainingGroomingServicesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FosterHouseServices
+        model = TrainingGroomingServices
         fields = ['id', 'name']
         
 # =============== HOSPITAL SERIALIZERS ===============
 
-class HouseSerializer(serializers.ModelSerializer):
+class TrainingGroomingSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing hospitals."""
-    tags = FosterHouseTagSerializer(many=True, read_only=True)
-    services = FosterHouseServicesSerializer(many=True, read_only=True)
+    tags = TrainingGroomingTagSerializer(many=True, read_only=True)
+    services = TrainingGroomingServicesSerializer(many=True, read_only=True)
 
     class Meta:
-        model = House
+        model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city','website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tags', 'services', 'created_at', 'updated_at',
         ]
 
 
-class HouseDetailSerializer(serializers.ModelSerializer):
+class TrainingGroomingDetailSerializer(serializers.ModelSerializer):
     """Full serializer"""
-    tags = FosterHouseTagSerializer(many=True, read_only=True)
-    services = FosterHouseServicesSerializer(many=True, read_only=True)
+    tags = TrainingGroomingTagSerializer(many=True, read_only=True)
+    services = TrainingGroomingServicesSerializer(many=True, read_only=True)
 
     class Meta:
-        model = House
+        model = TrainingGrooming
         fields = [
             'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
@@ -43,7 +43,7 @@ class HouseDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class HouseCreateUpdateSerializer(serializers.ModelSerializer):
+class TrainingGroomingCreateUpdateSerializer(serializers.ModelSerializer):
     """
     Accepts the full hospital payload including:
       - tag_ids: list of existing Tag PKs  (e.g. [1, 3, 5])
@@ -56,7 +56,7 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = House
+        model = TrainingGrooming
         fields = [
             'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
@@ -68,7 +68,7 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_tag_ids(self, value):
         """Make sure every supplied tag ID actually exists."""
-        existing = set(FosterHouseTag.objects.filter(id__in=value).values_list('id', flat=True))
+        existing = set(TrainingGroomingTag.objects.filter(id__in=value).values_list('id', flat=True))
         missing = set(value) - existing
         if missing:
             raise serializers.ValidationError(
@@ -78,7 +78,7 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_service_ids(self, value):
         """Make sure every supplied service ID actually exists."""
-        existing = set(FosterHouseServices.objects.filter(id__in=value).values_list('id', flat=True))
+        existing = set(TrainingGroomingServices.objects.filter(id__in=value).values_list('id', flat=True))
         missing = set(value) - existing
         if missing:
             raise serializers.ValidationError(
@@ -114,17 +114,17 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
         tag_ids = validated_data.pop('tag_ids', [])
         service_ids = validated_data.pop('service_ids', [])
 
-        house = House.objects.create(**validated_data)
+        training_grooming = TrainingGrooming.objects.create(**validated_data)
 
         # Set M2M tags
         if tag_ids:
-            house.tags.set(tag_ids)
+            training_grooming.tags.set(tag_ids)
         
         # Set M2M services
         if service_ids:
-            house.services.set(service_ids)
+            training_grooming.services.set(service_ids)
 
-        return house
+        return training_grooming
 
     def update(self, instance, validated_data):
         tag_ids = validated_data.pop('tag_ids', None)
@@ -147,10 +147,10 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Return the full detail representation after create/update."""
-        return HouseDetailSerializer(instance).data
+        return TrainingGroomingDetailSerializer(instance).data
 
 from django.contrib.auth.models import User
-from .models import Appointment, House
+from .models import Appointment, TrainingGrooming
 
 class UserSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source='userinfo.phone', read_only=True)
@@ -158,35 +158,35 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone']
 
-class HouseInAppSerializer(serializers.ModelSerializer):   # must be defined
+class TrainingGroomingInAppSerializer(serializers.ModelSerializer):   # must be defined
     class Meta:
-        model = House
+        model = TrainingGrooming
         fields = ['id', 'image', 'name', 'street', 'area', 'city']
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'house']
+        fields = ['id', 'training_grooming']
 
 class AppointmentDetailSerializer(serializers.ModelSerializer):
-    house = HouseInAppSerializer(read_only=True)
+    training_grooming = TrainingGroomingInAppSerializer(read_only=True)
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Appointment
-        fields = ['id', 'house', 'user']
+        fields = ['id', 'training_grooming', 'user']
 
-class HouseReviewReplySerializer(serializers.ModelSerializer):
+class TrainingGroomingReviewReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
-        model = HouseReviewReply
+        model = TrainingGroomingReviewReply
         fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
-class HouseReviewSerializer(serializers.ModelSerializer):
-    replies = HouseReviewReplySerializer(many=True, read_only=True, source='house_review_replies')
+class TrainingGroomingReviewSerializer(serializers.ModelSerializer):
+    replies = TrainingGroomingReviewReplySerializer(many=True, read_only=True, source='training_grooming_review_replies')
     user = UserSerializer(read_only=True)
     class Meta:
-        model = HouseReview
-        fields = ['id', 'house', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
+        model = TrainingGroomingReview
+        fields = ['id', 'training_grooming', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
         read_only_fields = ['user','replies', 'created_at', 'updated_at']

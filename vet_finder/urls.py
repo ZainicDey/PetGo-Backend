@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'vet-finder/reviews', views.HospitalReviewViewSet, basename='vet-review')
-
+router.register(r'vet-finder/replies', views.HospitalReviewReplyViewSet, basename='vet-reply')
 
 urlpatterns = [
     # Tags
@@ -18,3 +18,5 @@ urlpatterns = [
     # Appointments
     path('vet-finder/appointments/', views.AppointmentListView.as_view(), name='appointment-list-create'),
 ]
+
+urlpatterns += router.urls 
