@@ -3,7 +3,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'vet-finder/reviews', views.VetReviewListView, basename='vet-review')
+router.register(r'vet-finder/reviews', views.HospitalReviewViewSet, basename='vet-review')
 
 
 urlpatterns = [

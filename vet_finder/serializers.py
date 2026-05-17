@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import HospitalTag, Hospital, Veterinarian, Appointment, HostpitalReview, HostpitalReviewReply, HospitalServices
+from .models import HospitalTag, Hospital, Veterinarian, Appointment, HospitalReview, HospitalReviewReply, HospitalServices
 
 
 # =============== TAG SERIALIZER ===============
@@ -33,8 +33,8 @@ class HospitalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'address', 'website',
-            'opening_hours', 'phone_number', 'whatsapp_number',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'opening_hours', 'phone_number', 'whatsapp_number', 'average_rating',
             'tags', 'services','created_at', 'updated_at',
         ]
 
@@ -48,8 +48,8 @@ class HospitalDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'address', 'website',
-            'opening_hours', 'phone_number', 'whatsapp_number',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'opening_hours', 'phone_number', 'whatsapp_number', 'average_rating',
             'tags', 'services', 'veterinarians', 'created_at', 'updated_at',
         ]
 
@@ -71,11 +71,11 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'address', 'website',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_ids', 'services_ids', 'veterinarians', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'review_count', 'review_sum', 'average_rating']
 
     # ---------- validation ----------
 
@@ -185,7 +185,7 @@ class UserSerializer(serializers.ModelSerializer):
 class HospitalInAppSerializer(serializers.ModelSerializer):   # must be defined
     class Meta:
         model = Hospital
-        fields = ['id', 'image', 'name', 'address']
+        fields = ['id', 'image', 'name', 'street', 'area', 'city']
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -200,17 +200,17 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = ['id', 'hospital', 'user']
 
-class HostpitalReviewReplySerializer(serializers.ModelSerializer):
+class HospitalReviewReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
-        model = HostpitalReviewReply
+        model = HospitalReviewReply
         fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
-class HostpitalReviewSerializer(serializers.ModelSerializer):
-    replies = HostpitalReviewReplySerializer(many=True, read_only=True, source='vet_review_replies')
+class HospitalReviewSerializer(serializers.ModelSerializer):
+    replies = HospitalReviewReplySerializer(many=True, read_only=True, source='vet_review_replies')
     user = UserSerializer(read_only=True)
     class Meta:
-        model = HostpitalReview
+        model = HospitalReview
         fields = ['id', 'hospital', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
         read_only_fields = ['user','replies', 'created_at', 'updated_at']
