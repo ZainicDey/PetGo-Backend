@@ -23,6 +23,8 @@ urlpatterns = [
     path('api/', include('user.urls')),
     path('api/', include('vet_finder.urls')),
     path('api/', include('foster_house_finder.urls')),
+    path('api/', include('training_grooming.urls')),
+    path('api/', include('pet_adoption.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
 ]

@@ -109,6 +109,15 @@ class AppointmentListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+class AppointmentDetailView(generics.RetrieveAPIView):
+    serializer_class = AppointmentDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Appointment.objects.all()
+        return Appointment.objects.filter(user=self.request.user)
+
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import permissions
 

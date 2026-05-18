@@ -17,6 +17,7 @@ urlpatterns = [
 
     # Appointments
     path('vet-finder/appointments/', views.AppointmentListView.as_view(), name='appointment-list-create'),
+    path('vet-finder/appointments/<int:pk>/', views.AppointmentDetailView.as_view(), name='appointment-detail'),
 ]
 
 urlpatterns += router.urls 

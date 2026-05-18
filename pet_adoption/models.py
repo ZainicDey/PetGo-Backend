@@ -28,6 +28,9 @@ class PetAdoption(models.Model):
     area = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
 
+    #Approved
+    is_approved = models.BooleanField(default=False)
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
