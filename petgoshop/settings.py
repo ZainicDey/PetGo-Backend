@@ -49,7 +49,12 @@ INSTALLED_APPS = [
     'foster_house_finder',
     'training_grooming',
     'pet_adoption',
-    
+    'ecommerce',
+    'inventory',
+    'sales',
+    'marketing',
+    'pos',
+
     'rest_framework',
     'rest_framework_simplejwt',
 
