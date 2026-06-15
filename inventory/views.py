@@ -23,3 +23,8 @@ class ProductView(ModelViewSet):
     search_fields = ['name', 'description', 'category__name', 'brand__name']
     ordering_fields = ['created_at', 'updated_at', 'price']
     filterset_fields = ['category', 'brand']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]

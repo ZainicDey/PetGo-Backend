@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import HospitalTag, Hospital, Veterinarian, Appointment, HospitalReview, HospitalReviewReply, HospitalServices
-
+from django.utils import timezone
+import datetime
 
 # =============== TAG SERIALIZER ===============
 
@@ -27,22 +28,85 @@ class VeterinarianSerializer(serializers.ModelSerializer):
 
 class HospitalListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing hospitals."""
-    tags = HospitalTagSerializer(many=True, read_only=True)
-    services = HospitalServicesSerializer(many=True, read_only=True)
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
-            'opening_hours', 'phone_number', 'whatsapp_number', 'average_rating',
-            'tags', 'services','created_at', 'updated_at',
+            'id', 'image', 'name', 'street', 'area', 'city',
+            'phone_number', 'whatsapp_number', 'average_rating', 'tag_names', 
+            'service_names', 'status'
         ]
 
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
+
+    def get_status(self, obj):
+        # Your existing status logic
+        now = timezone.localtime(timezone.now())
+        current_day = now.strftime('%A').lower()
+        current_time = now.time()
+        hours_today = obj.opening_hours.get(current_day)
+        
+        if not hours_today:
+            return "Closed"
+
+        try:
+            open_time = datetime.datetime.strptime(hours_today.get('open'), "%H:%M").time()
+            close_time = datetime.datetime.strptime(hours_today.get('close'), "%H:%M").time()
+            
+            if open_time <= close_time:
+                return "Open" if open_time <= current_time <= close_time else "Closed"
+            else:
+                return "Open" if current_time >= open_time or current_time <= close_time else "Closed"
+        except (ValueError, TypeError):
+            return "Closed"
+
+    def get_status(self, obj):
+        # Gets the time in 'Asia/Dhaka' regardless of server location
+        now = timezone.localtime(timezone.now())
+        
+        current_day = now.strftime('%A').lower()
+        current_time = now.time()
+
+        hours_today = obj.opening_hours.get(current_day)
+        
+        # Return "Closed" strings instead of False
+        if not hours_today:
+            return "Closed" 
+
+        try:
+            open_str = hours_today.get('open')
+            close_str = hours_today.get('close')
+            
+            if not open_str or not close_str:
+                return "Closed"
+
+            open_time = datetime.datetime.strptime(open_str, "%H:%M").time()
+            close_time = datetime.datetime.strptime(close_str, "%H:%M").time()
+
+            # Determine boolean first
+            if open_time <= close_time:
+                is_currently_open = open_time <= current_time <= close_time
+            else:
+                is_currently_open = current_time >= open_time or current_time <= close_time
+
+            # Return the exact string based on the boolean
+            return "Open" if is_currently_open else "Closed"
+
+        except (ValueError, TypeError):
+            # Fallback for bad data
+            return "Closed"
 
 class HospitalDetailSerializer(serializers.ModelSerializer):
     """Full serializer — includes nested veterinarians."""
-    tags = HospitalTagSerializer(many=True, read_only=True)
-    services = HospitalServicesSerializer(many=True, read_only=True)
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
     veterinarians = VeterinarianSerializer(many=True, read_only=True)
 
     class Meta:
@@ -50,9 +114,14 @@ class HospitalDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number', 'average_rating',
-            'tags', 'services', 'veterinarians', 'created_at', 'updated_at',
+            'tag_names', 'service_names', 'veterinarians', 'created_at', 'updated_at',
         ]
 
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
 
 class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
     """

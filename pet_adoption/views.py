@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from .models import PetAdoption
-from .serializers import PetAdoptionSerializer
+from .serializers import PetAdoptionListSerializer, PetAdoptionDetailSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
@@ -15,7 +15,10 @@ class IsAdminOrOwner(permissions.BasePermission):
         return obj.user == request.user
         
 class PetAdoptionView(ModelViewSet):
-    serializer_class = PetAdoptionSerializer
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return PetAdoptionDetailSerializer
+        return PetAdoptionListSerializer
 
     def get_queryset(self):
         user = self.request.user

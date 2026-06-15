@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
+from .models import UserAddress
 import re
 
 # =============== REGISTRATION SERIALIZERS ===============
@@ -96,3 +97,39 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             token['is_phone_verified'] = False
             
         return token
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = ['id', 'user', 'street', 'area', 'city', 'zip_code']
+        read_only_fields = ['id']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if not request or not request.user:
+            raise serializers.ValidationError("Authentication is required.")
+        
+        # Determine target user: check attrs (for create/update) or fall back to self.instance.user (on update)
+        target_user = attrs.get('user')
+        if target_user is None and self.instance:
+            target_user = self.instance.user
+            
+        current_user = request.user
+        
+        # Check if the target user is the authenticated user themselves, OR if the request maker is admin
+        if not (current_user == target_user or current_user.is_staff or current_user.is_superuser):
+            raise serializers.ValidationError({
+                "user": "You do not have permission to manage addresses for this user."
+            })
+            
+        return attrs
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    addresses = UserAddressSerializer(many=True, read_only=True)
+    phone = serializers.CharField(source='userinfo.phone', read_only=True)
+    is_phone_verified = serializers.BooleanField(source='userinfo.is_phone_verified', read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'phone', 'is_phone_verified', 'addresses']
+        read_only_fields = ['id', 'email', 'username', 'phone', 'is_phone_verified', 'addresses']

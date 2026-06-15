@@ -15,32 +15,43 @@ class TrainingGroomingServicesSerializer(serializers.ModelSerializer):
         
 # =============== HOSPITAL SERIALIZERS ===============
 
-class TrainingGroomingSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for listing hospitals."""
-    tags = TrainingGroomingTagSerializer(many=True, read_only=True)
-    services = TrainingGroomingServicesSerializer(many=True, read_only=True)
+class TrainingGroomingListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing training grooming services."""
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
 
     class Meta:
         model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city','website',
-            'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'services', 'created_at', 'updated_at',
+            'id', 'image', 'name', 'street', 'area', 'city',
+            'phone_number', 'whatsapp_number', 'tag_names', 'service_names',
         ]
+
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
 
 
 class TrainingGroomingDetailSerializer(serializers.ModelSerializer):
-    """Full serializer"""
-    tags = TrainingGroomingTagSerializer(many=True, read_only=True)
-    services = TrainingGroomingServicesSerializer(many=True, read_only=True)
+    """Full serializer — includes nested tags and services."""
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
 
     class Meta:
         model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'services', 'created_at', 'updated_at',
+            'tag_names', 'service_names', 'created_at', 'updated_at',
         ]
+
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
 
 
 class TrainingGroomingCreateUpdateSerializer(serializers.ModelSerializer):

@@ -1,11 +1,12 @@
 # views.py (FIXED)
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User  # ← ADD THIS IMPORT
+from .models import UserAddress
 from .services.auth_service import AuthenticationService
 from .services.token_service import TokenService
 from .serializers import (
@@ -15,7 +16,9 @@ from .serializers import (
     EmailLoginSerializer,
     PhoneLoginSerializer,
     GoogleLoginSerializer,
-    CustomTokenObtainPairSerializer
+    CustomTokenObtainPairSerializer,
+    UserAddressSerializer,
+    UserDetailsSerializer
 )
 from drf_spectacular.utils import extend_schema
 
@@ -482,9 +485,39 @@ class UserProfileView(APIView):
     
     def get(self, request):
         """GET: Headers: Authorization: Bearer eyJ..."""
-        user_data = TokenService.get_user_data(request.user)
+        serializer = UserDetailsSerializer(request.user, context={'request': request})
         
         return Response({
             'success': True,
-            'data': user_data
+            'data': serializer.data
         }, status=status.HTTP_200_OK)
+
+
+class UserAddressViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing user addresses.
+    Only allows users to view and manage their own addresses, unless they are an admin.
+    """
+    serializer_class = UserAddressSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return UserAddress.objects.all()
+        return UserAddress.objects.filter(user=user)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for viewing and managing users.
+    Only allows users to view and manage their own details, unless they are an admin.
+    """
+    serializer_class = UserDetailsSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return User.objects.all()
+        return User.objects.filter(id=user.id)

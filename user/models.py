@@ -34,3 +34,13 @@ class TemporaryUser(models.Model):
         """OTP expires after 10 minutes"""
         expiry_time = self.otp_created_at + timezone.timedelta(minutes=10)
         return timezone.now() > expiry_time
+
+class UserAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    street = models.CharField(max_length=100)
+    area = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=10)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.street} {self.area} {self.city} {self.zip_code}"

@@ -1,10 +1,8 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import PetAdoptionView
 
-router = DefaultRouter()
+router = SimpleRouter(trailing_slash=False)
 router.register(r'pet-adoption', PetAdoptionView, basename='pet-adoption')
 
-urlpatterns = [
-    path('', include(router.urls)),
-]
+urlpatterns = router.urls

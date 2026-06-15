@@ -15,32 +15,43 @@ class FosterHouseServicesSerializer(serializers.ModelSerializer):
         
 # =============== HOSPITAL SERIALIZERS ===============
 
-class HouseSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for listing hospitals."""
-    tags = FosterHouseTagSerializer(many=True, read_only=True)
-    services = FosterHouseServicesSerializer(many=True, read_only=True)
+class HouseListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing foster houses."""
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
 
     class Meta:
         model = House
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
-            'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'services', 'created_at', 'updated_at',
+            'id', 'image', 'name', 'street', 'area', 'city',
+            'phone_number', 'whatsapp_number', 'tag_names', 'service_names',
         ]
+
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
 
 
 class HouseDetailSerializer(serializers.ModelSerializer):
-    """Full serializer"""
-    tags = FosterHouseTagSerializer(many=True, read_only=True)
-    services = FosterHouseServicesSerializer(many=True, read_only=True)
+    """Full serializer — includes nested tags and services."""
+    tag_names = serializers.SerializerMethodField()
+    service_names = serializers.SerializerMethodField()
 
     class Meta:
         model = House
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
+            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
-            'tags', 'services', 'created_at', 'updated_at',
+            'tag_names', 'service_names', 'created_at', 'updated_at',
         ]
+
+    def get_tag_names(self, obj):
+        return [tag.name for tag in obj.tags.all()]
+
+    def get_service_names(self, obj):
+        return [service.name for service in obj.services.all()]
 
 
 class HouseCreateUpdateSerializer(serializers.ModelSerializer):

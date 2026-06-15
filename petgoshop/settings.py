@@ -77,7 +77,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 9,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # 'URL_TRAILING_SLASH': False,
 }
@@ -217,7 +217,11 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+# Enable timezone awareness
+USE_TZ = True 
+
+# Force Django to convert UTC to Bangladeshi time for all local operations
+TIME_ZONE = 'Asia/Dhaka'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -229,3 +233,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
