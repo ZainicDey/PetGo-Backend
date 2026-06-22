@@ -1,2 +1,7 @@
-pip install google-auth google-auth-oauthlib google-auth-httplib2
-pip install spectacular-drf
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2
+spectacular-drf
+Django
+djangorestframework
+whitenoise
