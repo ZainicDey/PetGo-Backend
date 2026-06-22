@@ -31,9 +31,10 @@ import os
 
 ENVIRONMENT = os.getenv('DJANGO_ENV', 'local')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',') if os.getenv('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
 
-
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
 # Application definition
 
 INSTALLED_APPS = [
