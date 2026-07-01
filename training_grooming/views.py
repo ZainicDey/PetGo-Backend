@@ -1,9 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from .models import TrainingGrooming,Appointment,TrainingGroomingReview,TrainingGroomingReviewReply
+from .models import TrainingGrooming, TrainingGroomingTag, Appointment, TrainingGroomingReview, TrainingGroomingReviewReply
 from .serializers import (
-    TrainingGroomingSerializer,
+    TrainingGroomingTagSerializer,
+    TrainingGroomingListSerializer,
     TrainingGroomingDetailSerializer,
     TrainingGroomingCreateUpdateSerializer,
     AppointmentCreateSerializer,
@@ -20,8 +21,8 @@ class TagListCreateView(generics.ListCreateAPIView):
     GET  → list all available tags
     POST → create a new tag  {"name": "dental care"}
     """
-    queryset = TrainingGrooming.objects.all()
-    serializer_class = TrainingGroomingSerializer
+    queryset = TrainingGroomingTag.objects.all()
+    serializer_class = TrainingGroomingTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -36,8 +37,8 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     PATCH  → partial update
     DELETE → delete tag
     """
-    queryset = TrainingGrooming.objects.all()
-    serializer_class = TrainingGroomingSerializer
+    queryset = TrainingGroomingTag.objects.all()
+    serializer_class = TrainingGroomingTagSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -62,7 +63,7 @@ class TrainingGroomingListCreateView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return TrainingGroomingCreateUpdateSerializer
-        return TrainingGroomingSerializer
+        return TrainingGroomingListSerializer
 
 
 class TrainingGroomingDetailView(generics.RetrieveUpdateDestroyAPIView):

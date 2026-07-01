@@ -152,9 +152,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "postgres",
-        "USER": "postgres.tzbtyqlwttmtdilbmkrh",
+        "USER": "postgres.twqbhtiaeqthefuoraei",
         "PASSWORD": "tj8*vNMN4M2$n3?",
-        "HOST": "aws-0-us-east-2.pooler.supabase.com",
+        "HOST": "aws-0-ap-northeast-1.pooler.supabase.com",
         "PORT": "6543",
     }
 }
@@ -170,17 +170,17 @@ DATABASES = {
 #         }
 # }
 
-if ENVIRONMENT == 'production':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
-    }
+# if ENVIRONMENT == 'production':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': os.getenv('DB_NAME'),
+#             'USER': os.getenv('DB_USER'),
+#             'PASSWORD': os.getenv('DB_PASSWORD'),
+#             'HOST': os.getenv('DB_HOST'),
+#             'PORT': os.getenv('DB_PORT', '5432'),
+#         }
+#     }
 
 # elif ENVIRONMENT == 'local':
 #     DATABASES = {

@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from .models import FosterHouseTag, House, Appointment, HouseReview, HouseReviewReply
 from .serializers import (
     FosterHouseTagSerializer,
-    HouseSerializer,
+    HouseListSerializer,
     HouseDetailSerializer,
     HouseCreateUpdateSerializer,
     AppointmentCreateSerializer,
@@ -63,7 +63,7 @@ class HouseListCreateView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return HouseCreateUpdateSerializer
-        return HouseSerializer
+        return HouseListSerializer
 
 
 class HouseDetailView(generics.RetrieveUpdateDestroyAPIView):
