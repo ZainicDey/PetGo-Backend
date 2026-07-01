@@ -32,7 +32,7 @@ import os
 ENVIRONMENT = os.getenv('DJANGO_ENV', 'local')
 
 # 1. Allow Vercel URLs to access your app
-ALLOWED_HOSTS = ['.vercel.app', 'now.sh', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # 2. Tell Django where to dump compiled static files during build_files.sh
@@ -141,18 +141,23 @@ WSGI_APPLICATION = 'petgoshop.wsgi.application'
 #         'PORT': 5432,
 #     }
 # }
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 #test
-# DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': os.getenv('DB_NAME'),
-#             'USER': "postgres.tzbtyqlwttmtdilbmkrh",
-#             'PASSWORD': "tj8*vNMN4M2$n3?",
-#             'HOST': "aws-0-us-east-2.pooler.supabase.com",
-#             'PORT': "6543",
-#         }
-#     }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres.tzbtyqlwttmtdilbmkrh",
+        "PASSWORD": "tj8*vNMN4M2$n3?",
+        "HOST": "aws-0-us-east-2.pooler.supabase.com",
+        "PORT": "6543",
+    }
+}
 
 # DATABASES = {
 #         'default': {
@@ -177,25 +182,25 @@ if ENVIRONMENT == 'production':
         }
     }
 
-elif ENVIRONMENT == 'local':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'petgo_test',
-            'USER': 'root',
-            'PASSWORD': 'db123',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        }
-    }
+# elif ENVIRONMENT == 'local':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'petgo_test',
+#             'USER': 'root',
+#             'PASSWORD': 'db123',
+#             'HOST': '127.0.0.1',
+#             'PORT': '3306',
+#         }
+#     }
 
-else:  # default to SQLite for local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# else:  # default to SQLite for local
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
