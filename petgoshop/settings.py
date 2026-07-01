@@ -31,10 +31,15 @@ import os
 
 ENVIRONMENT = os.getenv('DJANGO_ENV', 'local')
 
-ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
+# 1. Allow Vercel URLs to access your app
+ALLOWED_HOSTS = ['.vercel.app', 'now.sh', '127.0.0.1', 'localhost']
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+# 2. Tell Django where to dump compiled static files during build_files.sh
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] # If you have a global static folder
+
 # Application definition
 
 INSTALLED_APPS = [
