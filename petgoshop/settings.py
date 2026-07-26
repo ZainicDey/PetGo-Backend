@@ -147,60 +147,43 @@ STORAGES = {
     },
 }
 
-#test
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres.twqbhtiaeqthefuoraei",
-        "PASSWORD": "tj8*vNMN4M2$n3?",
-        "HOST": "aws-0-ap-northeast-1.pooler.supabase.com",
-        "PORT": "6543",
+from urllib.parse import urlparse
+
+db_url = os.getenv('DATABASE_URL')
+if db_url:
+    tmpPostgres = urlparse(db_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.lstrip('/'),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': tmpPostgres.port or 5432,
+        }
     }
-}
-
-# DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': os.getenv('DB_NAME'),
-#             'USER': os.getenv('DB_USER'),
-#             'PASSWORD': os.getenv('DB_PASSWORD'),
-#             'HOST': os.getenv('DB_HOST'),
-#             'PORT': os.getenv('DB_PORT', '5432'),
-#         }
-# }
-
-# if ENVIRONMENT == 'production':
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': os.getenv('DB_NAME'),
-#             'USER': os.getenv('DB_USER'),
-#             'PASSWORD': os.getenv('DB_PASSWORD'),
-#             'HOST': os.getenv('DB_HOST'),
-#             'PORT': os.getenv('DB_PORT', '5432'),
-#         }
-#     }
-
-# elif ENVIRONMENT == 'local':
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'petgo_test',
-#             'USER': 'root',
-#             'PASSWORD': 'db123',
-#             'HOST': '127.0.0.1',
-#             'PORT': '3306',
-#         }
-#     }
-
-# else:  # default to SQLite for local
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
+elif os.getenv('DB_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'postgres',
+            'USER': 'postgres.twqbhtiaeqthefuoraei',
+            'PASSWORD': 'tj8*vNMN4M2$n3?',
+            'HOST': 'aws-0-ap-northeast-1.pooler.supabase.com',
+            'PORT': '6543',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
