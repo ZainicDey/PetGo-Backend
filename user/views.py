@@ -479,9 +479,15 @@ class PhoneLoginView(APIView):
 
 # =============== USER PROFILE ===============
 
+@extend_schema(
+    responses={200: UserDetailsSerializer},
+    summary="Get current user profile",
+    description="Retrieve profile details of the currently authenticated user. Protected by JWT Bearer token."
+)
 class UserProfileView(APIView):
     """Get current user profile - Protected by JWT"""
     permission_classes = [IsAuthenticated]
+    serializer_class = UserDetailsSerializer
     
     def get(self, request):
         """GET: Headers: Authorization: Bearer eyJ..."""
