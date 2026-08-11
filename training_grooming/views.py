@@ -39,6 +39,7 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = TrainingGroomingTag.objects.all()
     serializer_class = TrainingGroomingTagSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -74,6 +75,7 @@ class TrainingGroomingDetailView(generics.RetrieveUpdateDestroyAPIView):
     DELETE → delete Training & Grooming (cascades to veterinarians)
     """
     queryset = TrainingGrooming.objects.prefetch_related('tags', 'veterinarians').all()
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -104,6 +106,7 @@ class AppointmentListView(generics.ListCreateAPIView):
 class AppointmentDetailView(generics.RetrieveAPIView):
     serializer_class = AppointmentDetailSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -119,6 +122,7 @@ class TrainingGroomingReviewViewSet(ModelViewSet):
     queryset = TrainingGroomingReview.objects.select_related('user', 'grooming') \
                                   .prefetch_related('training_grooming_review_replies__user')
     serializer_class = TrainingGroomingReviewSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -131,6 +135,7 @@ class TrainingGroomingReviewViewSet(ModelViewSet):
 class TrainingGroomingReviewReplyViewSet(ModelViewSet):
     queryset = TrainingGroomingReviewReply.objects.select_related('user', 'review').all()
     serializer_class = TrainingGroomingReviewReplySerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':

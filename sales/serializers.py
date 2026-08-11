@@ -9,8 +9,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'order', 'product', 'product_details', 'quantity', 'unit_price', 'total_price']
-        read_only_fields = ['id', 'order', 'unit_price', 'total_price']
+        fields = ['id', 'uuid', 'order', 'product', 'product_details', 'quantity', 'unit_price', 'total_price']
+        read_only_fields = ['id', 'uuid', 'order', 'unit_price', 'total_price']
 
 
 class OrderItemCreateSerializer(serializers.Serializer):
@@ -27,14 +27,14 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'order_number', 'order_type', 'order_type_display',
+            'id', 'uuid', 'order_number', 'order_type', 'order_type_display',
             'user', 'address', 'subtotal', 'delivery_price',
             'coupon', 'coupon_discount', 'total_price',
             'payment_method', 'order_status',
             'items', 'order_items', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'order_number', 'subtotal', 'coupon_discount', 'total_price',
+            'id', 'uuid', 'order_number', 'subtotal', 'coupon_discount', 'total_price',
             'created_at', 'updated_at'
         ]
 

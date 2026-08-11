@@ -52,10 +52,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'uuid'
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'uuid'
 

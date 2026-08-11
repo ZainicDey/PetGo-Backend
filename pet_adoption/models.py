@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import uuid
 
 class PetAdoption(models.Model):
     # Basic info
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100)
     image = models.CharField(max_length=500)          # URL or path – increased length
     pet_type = models.CharField(max_length=100)       # e.g., Dog, Cat

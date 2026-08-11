@@ -5,13 +5,13 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'uuid']
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta: 
         model = models.Brand
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'uuid']
 class ProductSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='name',
@@ -24,7 +24,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Product
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'uuid']
 
     def to_internal_value(self, data):
         # Convert 'category' to lowercase before field-level processing

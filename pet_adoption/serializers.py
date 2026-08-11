@@ -12,6 +12,7 @@ class PetAdoptionListSerializer(serializers.ModelSerializer):
         model = PetAdoption
         fields = [
             'id',
+            'uuid',
             'name',
             'image',
             'pet_type',
@@ -83,6 +84,7 @@ class PetAdoptionDetailSerializer(serializers.ModelSerializer):
         model = PetAdoption
         fields = [
             'id',
+            'uuid',
             'name',
             'image',
             'pet_type',
@@ -106,7 +108,7 @@ class PetAdoptionDetailSerializer(serializers.ModelSerializer):
             'updated_at',
             'updated_at_display',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user']
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'user']
 
     def get_created_at_display(self, obj):
         """Convert created_at to relative time format (e.g., '2 days ago')."""

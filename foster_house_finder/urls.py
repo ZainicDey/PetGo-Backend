@@ -17,11 +17,11 @@ router.register(r'foster-house-finder/replies', HouseReviewReplyViewSet, basenam
 
 urlpatterns = [
     path('foster-house-finder/tags', TagListCreateView.as_view()),
-    path('foster-house-finder/tags/<int:pk>', TagDetailView.as_view()),
+    path('foster-house-finder/tags/<uuid:uuid>', TagDetailView.as_view()),
     path('foster-house-finder/houses', HouseListCreateView.as_view()),
-    path('foster-house-finder/houses/<int:pk>', HouseDetailView.as_view()),
+    path('foster-house-finder/houses/<uuid:uuid>', HouseDetailView.as_view()),
     path('foster-house-finder/appointments', AppointmentListView.as_view()),
-    path('foster-house-finder/appointments/<int:pk>', AppointmentDetailView.as_view()),
+    path('foster-house-finder/appointments/<uuid:uuid>', AppointmentDetailView.as_view()),
 ]
 
 urlpatterns += router.urls

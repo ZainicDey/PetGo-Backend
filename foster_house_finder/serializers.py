@@ -6,12 +6,12 @@ from .models import FosterHouseTag, House, FosterHouseServices, HouseReview, Hou
 class FosterHouseTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = FosterHouseTag
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
 
 class FosterHouseServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = FosterHouseServices
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
         
 # =============== HOSPITAL SERIALIZERS ===============
 
@@ -23,7 +23,7 @@ class HouseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = House
         fields = [
-            'id', 'image', 'name', 'street', 'area', 'city',
+            'id', 'uuid', 'image', 'name', 'street', 'area', 'city',
             'phone_number', 'whatsapp_number', 'tag_names', 'service_names',
         ]
 
@@ -42,7 +42,7 @@ class HouseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = House
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_names', 'service_names', 'created_at', 'updated_at',
         ]
@@ -69,11 +69,11 @@ class HouseCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = House
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about','street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_ids', 'service_ids', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at']
 
     # ---------- validation ----------
 
@@ -172,12 +172,12 @@ class UserSerializer(serializers.ModelSerializer):
 class HouseInAppSerializer(serializers.ModelSerializer):   # must be defined
     class Meta:
         model = House
-        fields = ['id', 'image', 'name', 'street', 'area', 'city']
+        fields = ['id', 'uuid', 'image', 'name', 'street', 'area', 'city']
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'house']
+        fields = ['id', 'uuid', 'house']
 
 class AppointmentDetailSerializer(serializers.ModelSerializer):
     house = HouseInAppSerializer(read_only=True)
@@ -185,13 +185,13 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = ['id', 'house', 'user']
+        fields = ['id', 'uuid', 'house', 'user']
 
 class HouseReviewReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = HouseReviewReply
-        fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
+        fields = ['id', 'uuid', 'review', 'user', 'reply', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
 class HouseReviewSerializer(serializers.ModelSerializer):
@@ -199,5 +199,5 @@ class HouseReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = HouseReview
-        fields = ['id', 'house', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
+        fields = ['id', 'uuid', 'house', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
         read_only_fields = ['user','replies', 'created_at', 'updated_at']

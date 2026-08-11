@@ -506,6 +506,7 @@ class UserAddressViewSet(viewsets.ModelViewSet):
     """
     serializer_class = UserAddressSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
     
     def get_queryset(self):
         user = self.request.user
@@ -521,6 +522,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
     
     def get_queryset(self):
         user = self.request.user

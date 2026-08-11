@@ -7,6 +7,7 @@ from inventory.models import Product
 
 
 class Order(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     ORDER_TYPE_CHOICES = [
         ('pos', 'POS / In-Store (Admin Created)'),
         ('online', 'Online / Direct (Customer Created)'),
@@ -64,6 +65,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField()

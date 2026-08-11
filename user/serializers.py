@@ -101,8 +101,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAddress
-        fields = ['id', 'user', 'street', 'area', 'city', 'zip_code']
-        read_only_fields = ['id']
+        fields = ['id', 'uuid', 'user', 'street', 'area', 'city', 'zip_code']
+        read_only_fields = ['id', 'uuid']
 
     def validate(self, attrs):
         request = self.context.get('request')
@@ -128,8 +128,9 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     addresses = UserAddressSerializer(many=True, read_only=True)
     phone = serializers.CharField(source='userinfo.phone', read_only=True)
     is_phone_verified = serializers.BooleanField(source='userinfo.is_phone_verified', read_only=True)
+    uuid = serializers.CharField(source='userinfo.uuid', read_only=True)
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'phone', 'is_phone_verified', 'addresses']
-        read_only_fields = ['id', 'email', 'username', 'phone', 'is_phone_verified', 'addresses']
+        fields = ['id', 'uuid', 'email', 'username', 'first_name', 'last_name', 'phone', 'is_phone_verified', 'addresses']
+        read_only_fields = ['id', 'uuid', 'email', 'username', 'phone', 'is_phone_verified', 'addresses']

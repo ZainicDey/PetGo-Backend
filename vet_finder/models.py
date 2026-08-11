@@ -1,21 +1,24 @@
 from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+import uuid
 class HospitalTag(models.Model):
     """Pre-created tags that can be selected when creating a hospital."""
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
 class HospitalServices(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return self.name
 
 class Hospital(models.Model):
     # Basic Info
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     image = models.CharField(max_length=500, blank=True, null=True)
     name = models.CharField(max_length=200)
     about = models.TextField()
@@ -56,6 +59,7 @@ class Veterinarian(models.Model):
     hospital = models.ForeignKey(
         Hospital, on_delete=models.CASCADE, related_name='veterinarians'
     )
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     image = models.CharField(max_length=500, blank=True, null=True)
     name = models.CharField(max_length=100)
     specialization = models.CharField(max_length=200)
@@ -69,6 +73,7 @@ class Veterinarian(models.Model):
         return f"{self.name} - {self.specialization} ({self.experience} yrs)"
 
 class Appointment(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vet_appointments', null=True, blank=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='vet_appointments', null=True, blank=True)
 
@@ -77,6 +82,7 @@ class Appointment(models.Model):
 
 
 class HospitalReview(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vet_reviews', null=True, blank=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='vet_reviews', null=True, blank=True)
     review = models.TextField()
@@ -123,6 +129,7 @@ class HospitalReview(models.Model):
             hospital.save(update_fields=['review_count', 'review_sum', 'average_rating'])
 
 class HospitalReviewReply(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     review = models.ForeignKey(HospitalReview, on_delete=models.CASCADE, related_name='vet_review_replies', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vet_review_replies', null=True, blank=True)
     reply = models.TextField()

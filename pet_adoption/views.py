@@ -15,6 +15,7 @@ class IsAdminOrOwner(permissions.BasePermission):
         return obj.user == request.user
         
 class PetAdoptionView(ModelViewSet):
+    lookup_field = 'uuid'
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return PetAdoptionDetailSerializer

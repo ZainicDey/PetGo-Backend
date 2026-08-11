@@ -1,19 +1,23 @@
 from django.db import models, transaction
 from django.core.validators import MinValueValidator, MaxValueValidator
+import uuid
 
 class TrainingGroomingTag(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50, unique=True)
     
     def __str__(self):
         return self.name
     
 class TrainingGroomingServices(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return self.name
 
 class TrainingGrooming(models.Model):
     # Basic Info
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     image = models.CharField(max_length=500, blank=True, null=True)
     name = models.CharField(max_length=200)
     about = models.TextField()
@@ -52,6 +56,7 @@ class TrainingGrooming(models.Model):
 from django.contrib.auth.models import User
 
 class Appointment(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='training_grooming_appointments')
     training_grooming = models.ForeignKey(TrainingGrooming, on_delete=models.CASCADE, null=True, blank=True, related_name='training_grooming_appointments')
 
@@ -60,6 +65,7 @@ class Appointment(models.Model):
 
 
 class TrainingGroomingReview(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_grooming_reviews', null=True, blank=True)
     training_grooming = models.ForeignKey(TrainingGrooming, on_delete=models.CASCADE, related_name='training_grooming_reviews', null=True, blank=True)
     review = models.TextField()
@@ -106,6 +112,7 @@ class TrainingGroomingReview(models.Model):
             training_grooming.save(update_fields=['review_count', 'review_sum', 'average_rating'])
 
 class TrainingGroomingReviewReply(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     review = models.ForeignKey(TrainingGroomingReview, on_delete=models.CASCADE, related_name='training_grooming_review_replies', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_grooming_review_replies', null=True, blank=True)
     reply = models.TextField()

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import uuid
 
 class Coupon(models.Model):
     DISCOUNT_TYPE_CHOICES = [
@@ -7,6 +8,7 @@ class Coupon(models.Model):
         ('flat', 'Flat Amount ($)'),
     ]
 
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     code = models.CharField(max_length=50, unique=True)
     discount_type = models.CharField(
         max_length=15,

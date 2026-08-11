@@ -44,5 +44,6 @@ class CouponViewSet(viewsets.ModelViewSet):
     queryset = Coupon.objects.all()
     serializer_class = CouponSerializer
     permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'uuid'
 
 

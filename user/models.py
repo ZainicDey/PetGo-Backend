@@ -6,6 +6,7 @@ from django.utils import timezone
 User._meta.get_field('email')._unique = True
 
 class UserModel(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='userinfo')
     phone = models.CharField(max_length=20, unique=True)
     is_phone_verified = models.BooleanField(default=False)
@@ -36,6 +37,7 @@ class TemporaryUser(models.Model):
         return timezone.now() > expiry_time
 
 class UserAddress(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=100)
     area = models.CharField(max_length=255)

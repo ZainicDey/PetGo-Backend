@@ -1,7 +1,9 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 class Category(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100, unique=True)
 
     def save(self, *args, **kwargs):
@@ -12,6 +14,7 @@ class Category(models.Model):
         return self.name
 
 class Brand(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     image = models.CharField(max_length=255)
     name = models.CharField(max_length=100, unique=True)
 
@@ -19,6 +22,7 @@ class Brand(models.Model):
         return self.name
 
 class Product(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     image = models.JSONField(default=list, null=True, blank=True) 
     name = models.CharField(max_length=100)
     description = models.TextField()

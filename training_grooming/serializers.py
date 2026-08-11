@@ -6,12 +6,12 @@ from .models import TrainingGroomingTag, TrainingGrooming, TrainingGroomingServi
 class TrainingGroomingTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingGroomingTag
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
 
 class TrainingGroomingServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingGroomingServices
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
         
 # =============== HOSPITAL SERIALIZERS ===============
 
@@ -23,7 +23,7 @@ class TrainingGroomingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'street', 'area', 'city',
+            'id', 'uuid', 'image', 'name', 'street', 'area', 'city',
             'phone_number', 'whatsapp_number', 'tag_names', 'service_names',
         ]
 
@@ -42,7 +42,7 @@ class TrainingGroomingDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_names', 'service_names', 'created_at', 'updated_at',
         ]
@@ -69,11 +69,11 @@ class TrainingGroomingCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingGrooming
         fields = [
-            'id', 'image', 'name', 'about','street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about','street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_ids', 'service_ids', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at']
 
     # ---------- validation ----------
 
@@ -172,12 +172,12 @@ class UserSerializer(serializers.ModelSerializer):
 class TrainingGroomingInAppSerializer(serializers.ModelSerializer):   # must be defined
     class Meta:
         model = TrainingGrooming
-        fields = ['id', 'image', 'name', 'street', 'area', 'city']
+        fields = ['id', 'uuid', 'image', 'name', 'street', 'area', 'city']
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'training_grooming']
+        fields = ['id', 'uuid', 'training_grooming']
 
 class AppointmentDetailSerializer(serializers.ModelSerializer):
     training_grooming = TrainingGroomingInAppSerializer(read_only=True)
@@ -185,13 +185,13 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = ['id', 'training_grooming', 'user']
+        fields = ['id', 'uuid', 'training_grooming', 'user']
 
 class TrainingGroomingReviewReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = TrainingGroomingReviewReply
-        fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
+        fields = ['id', 'uuid', 'review', 'user', 'reply', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
 class TrainingGroomingReviewSerializer(serializers.ModelSerializer):
@@ -199,5 +199,5 @@ class TrainingGroomingReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = TrainingGroomingReview
-        fields = ['id', 'training_grooming', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
+        fields = ['id', 'uuid', 'training_grooming', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
         read_only_fields = ['user','replies', 'created_at', 'updated_at']

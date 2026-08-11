@@ -39,6 +39,7 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = FosterHouseTag.objects.all()
     serializer_class = FosterHouseTagSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -74,6 +75,7 @@ class HouseDetailView(generics.RetrieveUpdateDestroyAPIView):
     DELETE → delete house (cascades to veterinarians)
     """
     queryset = House.objects.prefetch_related('tags', 'veterinarians').all()
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -104,6 +106,7 @@ class AppointmentListView(generics.ListCreateAPIView):
 class AppointmentDetailView(generics.RetrieveAPIView):
     serializer_class = AppointmentDetailSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -118,6 +121,7 @@ class HouseReviewViewSet(ModelViewSet):
     queryset = HouseReview.objects.select_related('user', 'house') \
                                   .prefetch_related('house_review_replies__user')
     serializer_class = HouseReviewSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -130,6 +134,7 @@ class HouseReviewViewSet(ModelViewSet):
 class HouseReviewReplyViewSet(ModelViewSet):
     queryset = HouseReviewReply.objects.select_related('user', 'review').all()
     serializer_class = HouseReviewReplySerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':

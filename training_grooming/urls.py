@@ -17,11 +17,11 @@ router.register(r'training-grooming/replies', TrainingGroomingReviewReplyViewSet
 
 urlpatterns = [
     path('training-grooming/tags', TagListCreateView.as_view()),
-    path('training-grooming/tags/<int:pk>', TagDetailView.as_view()),
+    path('training-grooming/tags/<uuid:uuid>', TagDetailView.as_view()),
     path('training-grooming', TrainingGroomingListCreateView.as_view()),
-    path('training-grooming/<int:pk>', TrainingGroomingDetailView.as_view()),
+    path('training-grooming/<uuid:uuid>', TrainingGroomingDetailView.as_view()),
     path('training-grooming/appointments', AppointmentListView.as_view()),
-    path('training-grooming/appointments/<int:pk>', AppointmentDetailView.as_view()),
+    path('training-grooming/appointments/<uuid:uuid>', AppointmentDetailView.as_view()),
 ]
 
 urlpatterns += router.urls

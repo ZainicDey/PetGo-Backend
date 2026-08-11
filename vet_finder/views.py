@@ -40,6 +40,7 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = HospitalTag.objects.all()
     serializer_class = HospitalTagSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -82,6 +83,7 @@ class HospitalDetailView(generics.RetrieveUpdateDestroyAPIView):
     DELETE → delete hospital (cascades to veterinarians)
     """
     queryset = Hospital.objects.prefetch_related('tags', 'veterinarians').all()
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -112,6 +114,7 @@ class AppointmentListView(generics.ListCreateAPIView):
 class AppointmentDetailView(generics.RetrieveAPIView):
     serializer_class = AppointmentDetailSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -131,6 +134,7 @@ class HospitalReviewViewSet(ModelViewSet):
     queryset = HospitalReview.objects.select_related('user', 'hospital') \
                                   .prefetch_related('vet_review_replies__user')
     serializer_class = HospitalReviewSerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -143,6 +147,7 @@ class HospitalReviewViewSet(ModelViewSet):
 class HospitalReviewReplyViewSet(ModelViewSet):
     queryset = HospitalReviewReply.objects.all()
     serializer_class = HospitalReviewReplySerializer
+    lookup_field = 'uuid'
 
     def get_permissions(self):
         if self.request.method == 'GET':

@@ -8,20 +8,20 @@ import datetime
 class HospitalTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalTag
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
 
 # =============== HOSPITAL SERVICES SERIALIZER ===============
 class HospitalServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalServices
-        fields = ['id', 'name']
+        fields = ['id', 'uuid', 'name']
 
 # =============== VETERINARIAN SERIALIZER ===============
 
 class VeterinarianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Veterinarian
-        fields = ['id', 'image', 'name', 'specialization', 'experience', 'order']
+        fields = ['id', 'uuid', 'image', 'name', 'specialization', 'experience', 'order']
 
 
 # =============== HOSPITAL SERIALIZERS ===============
@@ -35,7 +35,7 @@ class HospitalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'street', 'area', 'city',
+            'id', 'uuid', 'image', 'name', 'street', 'area', 'city',
             'phone_number', 'whatsapp_number', 'average_rating', 'tag_names', 
             'service_names', 'status'
         ]
@@ -112,7 +112,7 @@ class HospitalDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number', 'average_rating',
             'tag_names', 'service_names', 'veterinarians', 'created_at', 'updated_at',
         ]
@@ -140,11 +140,11 @@ class HospitalCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
         fields = [
-            'id', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
+            'id', 'uuid', 'image', 'name', 'about', 'street', 'area', 'city', 'website',
             'opening_hours', 'phone_number', 'whatsapp_number',
             'tag_ids', 'services_ids', 'veterinarians', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'review_count', 'review_sum', 'average_rating']
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at', 'review_count', 'review_sum', 'average_rating']
 
     # ---------- validation ----------
 
@@ -254,12 +254,12 @@ class UserSerializer(serializers.ModelSerializer):
 class HospitalInAppSerializer(serializers.ModelSerializer):   # must be defined
     class Meta:
         model = Hospital
-        fields = ['id', 'image', 'name', 'street', 'area', 'city']
+        fields = ['id', 'uuid', 'image', 'name', 'street', 'area', 'city']
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'hospital']
+        fields = ['id', 'uuid', 'hospital']
 
 class AppointmentDetailSerializer(serializers.ModelSerializer):
     hospital = HospitalInAppSerializer(read_only=True)
@@ -267,13 +267,13 @@ class AppointmentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = ['id', 'hospital', 'user']
+        fields = ['id', 'uuid', 'hospital', 'user']
 
 class HospitalReviewReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = HospitalReviewReply
-        fields = ['id', 'review', 'user', 'reply', 'created_at', 'updated_at']
+        fields = ['id', 'uuid', 'review', 'user', 'reply', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
 class HospitalReviewSerializer(serializers.ModelSerializer):
@@ -281,5 +281,5 @@ class HospitalReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = HospitalReview
-        fields = ['id', 'hospital', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
+        fields = ['id', 'uuid', 'hospital', 'user', 'review', 'rating', 'created_at', 'updated_at', 'replies']
         read_only_fields = ['user','replies', 'created_at', 'updated_at']
