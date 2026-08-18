@@ -178,10 +178,10 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'postgres',
-            'USER': 'postgres.twqbhtiaeqthefuoraei',
-            'PASSWORD': 'tj8*vNMN4M2$n3?',
-            'HOST': 'aws-0-ap-northeast-1.pooler.supabase.com',
-            'PORT': '6543',
+            'USER': 'postgres.nujdfanhgfzqqjjsgsfx',
+            'PASSWORD': 'kadSUt0DDqYJJCMX',
+            'HOST': 'aws-0-us-east-2.pooler.supabase.com',
+            'PORT': '5432',
         }
     }
 
