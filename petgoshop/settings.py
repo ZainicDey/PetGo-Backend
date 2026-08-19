@@ -154,7 +154,8 @@ DATABASES = {
         'USER': 'postgres.twqbhtiaeqthefuoraei',
         'PASSWORD': 'M0E3ctMcYkzgM2yd',
         'HOST': 'aws-0-ap-northeast-1.pooler.supabase.com',
-        'PORT': '5432',
+        # 'PORT': '5432',
+        'PORT': '6543',
     }
 }
 
