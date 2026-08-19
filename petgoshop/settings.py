@@ -147,43 +147,16 @@ STORAGES = {
     },
 }
 
-from urllib.parse import urlparse
-
-db_url = os.getenv('DATABASE_URL')
-if db_url:
-    tmpPostgres = urlparse(db_url)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': tmpPostgres.path.lstrip('/'),
-            'USER': tmpPostgres.username,
-            'PASSWORD': tmpPostgres.password,
-            'HOST': tmpPostgres.hostname,
-            'PORT': tmpPostgres.port or 5432,
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.nujdfanhgfzqqjjsgsfx',
+        'PASSWORD': 'kadSUt0DDqYJJCMX',
+        'HOST': 'aws-0-us-east-2.pooler.supabase.com',
+        'PORT': '5432',
     }
-elif os.getenv('DB_NAME'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'postgres',
-            'USER': 'postgres.nujdfanhgfzqqjjsgsfx',
-            'PASSWORD': 'kadSUt0DDqYJJCMX',
-            'HOST': 'aws-0-us-east-2.pooler.supabase.com',
-            'PORT': '5432',
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
